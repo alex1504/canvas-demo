@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>canvas刮刮卡</title>
+    <title>canvas红包图片</title>
     <link rel="stylesheet" href="../libs/bootstrap.min.css">
     <style>
         html,body{
@@ -23,32 +23,48 @@
         .wrap{
             text-align: center;
         }
-        .card{
+        .card-wrap{
             position: relative;
             width: 600px;
             height: 400px;
+            border: 1px solid #bdbdbd;
             margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .card{
+            width: 100%;
+            height: 100%;
             background-position: center center;
             background-repeat: no-repeat;
             background-size: 100% auto;
-            border: 1px solid #bdbdbd;
+            filter: blur(20px);
         }
-        .card canvas{
+        #canvas{
             position: absolute;
+            width: 100%;
+            height: 100%;
             left: 0;
             top: 0;
             z-index: 2;
+        }
+        .panel{
+            margin-top: 10px;
         }
     </style>
 </head>
 
 <body>
     <section class="wrap">
-        <div id="card" class="card">
+        <div class="card-wrap">
+            <div id="card" class="card"></div>
             <canvas id="canvas" width="600" height="400"></canvas>
         </div>
         <div>
             <input id="select" type="file" class="btn btn-primary" value="选择图片">
+        </div>
+        <div class="panel">
+            <button id="random" class="btn btn-success">随机</button>
+            <button id="full" class="btn btn-danger">全显</button>
         </div>
     </section>
 

@@ -2,11 +2,10 @@ var selectEle = document.getElementById('select')
 var canvas = document.getElementById('canvas')
 var ctx = canvas.getContext('2d')
 var cardEle = document.getElementById('card')
-var imgEle = document.getElementById('card-img')
 var canvasInfo = {}
 var isEnabled = false
 
-// 擦除画笔半斤
+// 擦除画笔半径
 var penR = 10
 
 function init() {
