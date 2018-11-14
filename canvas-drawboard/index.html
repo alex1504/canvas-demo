@@ -6,7 +6,7 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
         <title>canvas画板</title>
         <link rel="stylesheet" href="../libs/bootstrap.min.css" />
-        <link rel="stylesheet" href="./css/font-awesome.min.css" />
+        <link rel="stylesheet" href="./css/all.min.css" />
         <style>
             html,
             body {
@@ -43,7 +43,7 @@
                 color: rgba(223, 28, 28, 0.856);
             }
 
-            .panel .icon {
+            .panel .fas {
                 font-size: 30px;
                 color: #3a3a3a;
             }
@@ -78,10 +78,62 @@
             .palette .square.z-active {
                 border: 2px solid rgba(223, 28, 28, 0.856);
             }
+
+            .cover {
+                position: fixed;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                width: 600px;
+                height: 400px;
+                display: none;
+                justify-content: center;
+                align-items: center;
+                border: 1px solid #bdbdbd;
+                background-color: #fff;
+            }
+            .cover.z-active {
+                display: flex;
+            }
+
+            .cover img {
+                max-width: 100%;
+                max-height: 100%;
+            }
+            .cover .topbar {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 40px;
+            }
+            .cover .topbar .close {
+                position: absolute;
+                right: 0;
+                top: 0;
+                height: 100%;
+                width: 40px;
+                color: #fff;
+                background-color: #333;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .cover .fas {
+                font-size: 30px;
+                color: #fff;
+            }
         </style>
     </head>
 
     <body>
+        <section id="cover" class="cover">
+            <div class="topbar">
+                <div id="close" class="close"><span class="fas fa-times"></span></div>
+            </div>
+            <img id="prv-img" src="" />
+        </section>
+
         <canvas id="canvas"></canvas>
 
         <section id="palette" class="palette"></section>
@@ -89,22 +141,19 @@
         <section id="panel" class="panel">
             <span
                 data-action="circle"
-                class="j-action icon icon-circle z-active"
+                class="j-action fas fa-circle z-active"
             ></span>
-            <span data-action="square" class="j-action icon icon-stop"></span>
+            <span data-action="square" class="j-action fas fa-stop"></span>
             <span data-action="line" class="j-action line">——</span>
-            <span data-action="pencil" class="j-action icon icon-pencil"></span>
-            <span data-action="eraser" class="j-action icon icon-eraser"></span>
-            <span data-action="back" class="j-action icon icon-reply"></span>
             <span
-                data-action="refresh"
-                class="j-action icon icon-refresh"
+                data-action="pencil"
+                class="j-action fas fa-pencil-alt"
             ></span>
-            <span
-                data-action="picture"
-                class="j-action icon icon-picture"
-            ></span>
-            <span data-action="save" class="j-action icon icon-save"></span>
+            <span data-action="eraser" class="j-action fas fa-eraser"></span>
+            <span data-action="back" class="j-action fas fa-reply"></span>
+            <span data-action="refresh" class="j-action fas fa-redo"></span>
+            <span data-action="picture" class="j-action fas fa-images"></span>
+            <span data-action="save" class="j-action fas fa-save"></span>
         </section>
 
         <script src="../libs/jquery-3.3.1.min.js"></script>

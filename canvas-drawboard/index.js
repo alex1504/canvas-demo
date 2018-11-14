@@ -3,9 +3,14 @@ var drawboard = (function () {
     var paletteEle = document.getElementById("palette")
     var painter = new Painter(canvas)
     var btnEles = document.querySelectorAll(".j-action")
+    var coverEle = document.getElementById("cover")
+    var prvImgEle = document.getElementById("prv-img")
+    var closeEle = document.getElementById('close')
     var on = false
     var paintData = []
     var color;
+    var stepFlag = 0
+    var lastPen = 'circle'
 
     function setArea() {
         var width = window.innerWidth
@@ -15,14 +20,14 @@ var drawboard = (function () {
 
     function bindEvent() {
         drawCircle()
-        btnEles
-            .forEach(function (btn) {
-                btn
-                    .addEventListener('click', function (e) {
-                        var action = e
-                            .target
-                            .getAttribute('data-action')
+        btnEles.forEach(function (btn) {
+            btn
+                .addEventListener('click', function (e) {
+                    var action = e
+                        .target
+                        .getAttribute('data-action')
 
+                    if (action !== "back" && action !== "refresh") {
                         btnEles.forEach(function (btn) {
                             btn
                                 .classList
@@ -31,40 +36,76 @@ var drawboard = (function () {
                         btn
                             .classList
                             .add('z-active')
+                    }
 
-                        switch (action) {
-                            case 'circle':
-                                drawCircle()
-                                break;
-                            case 'square':
-                                drawSquare()
-                                break;
-                            case 'line':
-                                drawLine()
-                                break;
-                            case 'pencil':
-                                drawCurve()
-                                break;
-                            case 'eraser':
-                                drawErase()
-                                break;
-                            case 'back':
-                                stepBack()
-                                break;
-                            case 'refresh':
-                                refresh()
-                                break;
-                            case 'picture':
-                                state = 'picture'
-                                break;
-                            case 'save':
-                                state = 'save'
-                                break;
-                        }
+                    switch (action) {
+                        case 'circle':
+                            drawCircle();
+                            lastPen = 'circle'
+                            break;
+                        case 'square':
+                            drawSquare();
+                            lastPen = 'square'
+                            break;
+                        case 'line':
+                            drawLine();
+                            lastPen = 'line'
+                            break;
+                        case 'pencil':
+                            drawCurve();
+                            lastPen = 'pencil'
+                            break;
+                        case 'eraser':
+                            drawErase();
+                            lastPen = 'eraser'
+                            break;
+                        case 'back':
+                            stepBack();
+                            break;
+                        case 'refresh':
+                            refresh();
+                            break;
+                        case 'picture':
+                            renderImage();
+                            removeEvent();
+                            break;
+                        case 'save':
+                            saveImage();
+                            removeEvent();
+                            break;
+                    }
 
-                    })
-            })
+                })
+        })
 
+        closeEle.onclick = function () {
+            coverEle.classList.remove('z-active')
+            resetPen()
+        }
+
+
+    }
+
+    function removeEvent() {
+        canvas.onmousedown = null;
+        canvas.onmousemove = null;
+        canvas.onmouseup = null;
+    }
+
+    function resetPen() {
+        btnEles.forEach(function (btn) {
+            var action = btn.getAttribute('data-action')
+            if (action === lastPen) {
+                btn
+                    .classList
+                    .add('z-active')
+            } else {
+                btn
+                    .classList
+                    .remove('z-active')
+            }
+
+        })
     }
 
     function drawCircle() {
@@ -149,7 +190,6 @@ var drawboard = (function () {
         }
     }
 
-
     function drawLine() {
         canvas.onmousedown = function (e) {
             var x1,
@@ -189,13 +229,12 @@ var drawboard = (function () {
     }
 
     function drawCurve() {
-        var stepFlag = 0
         canvas.onmousedown = function (e) {
             var x1,
                 y1,
                 x2,
                 y2,
-                len;
+                len, on;
 
             on = true
             x1 = e.pageX;
@@ -250,13 +289,19 @@ var drawboard = (function () {
         canvas.onmousedown = function (e) {
             var x,
                 y,
-                len;
+                len, on;
 
             on = true
             canvas.onmousemove = function (e) {
                 if (!on) {
                     return
                 }
+
+                on = false
+
+                setTimeout(() => {
+                    on = true
+                }, 60);
 
                 len = paintData.length
                 x = e.pageX
@@ -268,38 +313,40 @@ var drawboard = (function () {
                 paintData[len].y = y
                 paintData[len].r = 10
                 paintData[len].color = "#f8f8f8"
+                paintData[len].stepFlag = stepFlag
 
                 render()
             }
             canvas.onmouseup = function (e) {
-                on = false
+                canvas.onmousemove = null
+                stepFlag++
             }
         }
     }
 
     function stepBack() {
-        console.log(paintData, 1)
-        var index = paintData.length - 1
-        var cacheStepFlag;
-        while (index >= 0) {
-            var item = paintData[index]
-            var type = item.type
-            
-            var stepFlag = item.stepFlag
-            if (type !== "curve" || type !== "eraser") {
-                paintData.pop()
-                break;
-            }
-            
-            if((cacheStepFlag && cacheStepFlag !== stepFlag) || index === 0){
-                paintData = paintData.slice(0, index)
-                break
-            }
-            
-            cacheStepFlag = stepFlag
-            index--
+        if (!paintData.length) {
+            return;
         }
-        console.log(paintData, 2)
+        var index = paintData.length - 1
+        var lastItemType = paintData[index].type
+        var lastItemStepFlag = paintData[index].stepFlag
+
+        if (lastItemType === "curve" || lastItemType === "eraser") {
+            while (index >= 0) {
+                var stepFlag = paintData[index].stepFlag
+                if (lastItemStepFlag === stepFlag) {
+                    paintData.pop()
+                } else {
+                    break
+                }
+                index--
+            }
+        } else {
+            paintData.pop()
+        }
+
+        render()
     }
 
     function refresh() {
@@ -308,6 +355,35 @@ var drawboard = (function () {
         canvas.onmousedown = null
         canvas.onmousemove = null
         canvas.onmouseup = null
+    }
+
+    function renderImage() {
+        if (!paintData.length) {
+            alert("当前画布为空")
+            resetPen()
+            return
+        }
+
+        var data = canvas.toDataURL()
+
+        prvImgEle.src = data
+        coverEle.classList.add('z-active')
+    }
+
+    function saveImage() {
+        if (!paintData.length) {
+            alert("当前画布为空")
+            resetPen()
+            return
+        }
+        var aEle = document.createElement('a')
+        var data = prvImgEle.getAttribute('src')
+        var fileName = new Date().toLocaleDateString().replace(/\//g, '-') + '-' + Math.floor((Math.random() * 1000000)) + '.png'
+        aEle.setAttribute('download', fileName)
+        aEle.href = data
+        document.body.appendChild(aEle)
+        aEle.click()
+        document.body.removeChild(aEle)
     }
 
     function render() {
@@ -389,30 +465,42 @@ var drawboard = (function () {
             .getJSON("./js/color.json", function (data) {
                 color = data[0][0]
 
-                data
-                    .forEach(function (group, groupIndex) {
-                        group
-                            .forEach(function (color, index) {
-                                var div = document.createElement('div')
-                                div.style['background-color'] = color
-                                div.className = 'square'
-                                if (groupIndex === 0 && index === 0) {
-                                    div.classList.add('z-active')
-                                }
+                data.forEach(function (group, groupIndex) {
+                    group
+                        .forEach(function (color, index) {
+                            var div = document.createElement('div')
+                            div.style['background-color'] = color
+                            div.className = 'square'
+                            if (groupIndex === 0 && index === 0) {
+                                div
+                                    .classList
+                                    .add('z-active')
+                            }
 
-                                paletteEle.appendChild(div)
+                            paletteEle.appendChild(div)
+                        })
+                })
+
+                Array
+                    .prototype
+                    .forEach
+                    .call(paletteEle.children, function (node) {
+                        node
+                            .addEventListener('click', function () {
+                                Array
+                                    .prototype
+                                    .forEach
+                                    .call(paletteEle.children, function (node) {
+                                        node
+                                            .classList
+                                            .remove('z-active')
+                                    })
+                                this
+                                    .classList
+                                    .add('z-active')
+                                color = this.style['background-color']
                             })
                     })
-
-                Array.prototype.forEach.call(paletteEle.children, function (node) {
-                    node.addEventListener('click', function () {
-                        Array.prototype.forEach.call(paletteEle.children, function (node) {
-                            node.classList.remove('z-active')
-                        })
-                        this.classList.add('z-active')
-                        color = this.style['background-color']
-                    })
-                })
 
             });
     }
